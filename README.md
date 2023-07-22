@@ -19,6 +19,10 @@ python manage.py migrate
 ```bash
 python manage.py runserver
 ```
+```bash
+pip install --upgrade celery
+
+```
 
 ```bash
 celery -A mysite worker -l info
