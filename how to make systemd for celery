@@ -1,0 +1,26 @@
+for make systemd celery
+
+
+sudo nano /etc/systemd/system/celery.service
+
+-----------------------------
+  
+[Unit]
+Description=Celery Service
+After=network.target
+
+[Service]
+Type=forking
+User=root
+Group=root
+WorkingDirectory=/home/sina/django-celery-example
+Environment="PATH=/home/sina/django-celery-example/venv/bin"
+ExecStart=/home/sina/django-celery-example/venv/bin/celery -A mysite worker --loglevel=info
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+  --------------
+
+  
+  
