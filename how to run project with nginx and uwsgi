@@ -1,0 +1,118 @@
+add this line to requirement
+uWSGI==2.0.22
+-----------
+Step 1: Update uWSGI Configuration
+Create or edit the uWSGI configuration file, mysite_uwsgi.ini, with the following content:
+----------
+
+
+[uwsgi]
+http-timeout = 86400
+
+# Django-related settings
+module = mysite.wsgi:application
+uid = www-data
+gid = www-data
+virtualenv = /home/sina/django-celery-example/venv
+
+# The location to store uWSGI's process ID
+pidfile = /tmp/mysite_uwsgi.pid
+
+# The address and port for uWSGI to bind to
+socket = 127.0.0.1:8000
+
+# The number of worker processes to spawn
+processes = 4
+
+# The maximum number of requests each worker can handle before being restarted
+max-requests = 5000
+
+# Additional uWSGI settings if needed
+
+
+------------
+Make sure to replace mysite with the actual name of your Django project.
+
+Step 2: Test uWSGI
+You can now test uWSGI with your Django project using the following command:
+
+
+----------------
+
+uwsgi --ini /home/sina/django-celery-example/mysite_uwsgi.ini
+--------------
+Step 3: Update Nginx Configuration
+Create or edit the Nginx configuration file, mysite_nginx.conf, with the following content:
+
+-------------
+server {
+    listen 80;
+    server_name your_domain.com;  # Replace with your actual domain or IP
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass 127.0.0.1:8000;
+    }
+
+    # Static files location (if not served by Django itself)
+    location /static/ {
+        alias /home/sina/django-celery-example/static/;
+    }
+
+    # Media files location (if not served by Django itself)
+    location /media/ {
+        alias /home/sina/django-celery-example/media/;
+    }
+}
+--------------
+Make sure to replace your_domain.com with your actual domain or IP address.
+
+Step 4: Link Nginx Configuration
+Create a symbolic link to your Nginx configuration file in the sites-enabled directory:
+
+---------------
+sudo ln -s /home/sina/django-celery-example/mysite_nginx.conf /etc/nginx/sites-enabled/
+-------------
+Step 5: Restart Nginx
+Restart Nginx to apply the changes:
+
+---------
+sudo service nginx restart
+
+To use systemd to manage uWSGI as a background process, you'll need to create a systemd service unit file for your uWSGI process. Here's how you can do it:
+
+Step 1: Create the systemd service unit file
+Create a file named mysite_uwsgi.service in the /etc/systemd/system/ directory with the following content:
+---------------------
+[Unit]
+Description=uWSGI service for MySite
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/sina/django-celery-example
+ExecStart=/home/sina/django-celery-example/venv/bin/uwsgi --ini /home/sina/django-celery-example/mysite_uwsgi.ini
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+--------------
+Make sure to replace www-data with the appropriate user and group for your system. Also, adjust the paths to match your project setup.
+
+Step 2: Enable and start the systemd service
+Now, you can enable and start the uWSGI systemd service:
+
+sudo systemctl enable mysite_uwsgi
+sudo systemctl start mysite_uwsgi
+-----------
+sudo systemctl status mysite_uwsgi
+-----
+sudo systemctl daemon-reload
+
+
+
