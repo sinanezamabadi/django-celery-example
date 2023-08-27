@@ -1,0 +1,7 @@
+[program:mysite_worker]
+command=celery --app=mysite.run_celery:app worker --loglevel=INFO
+autostart=true
+autorestart=true
+stdout_logfile = /var/log/supervisor/mysite_worker.log
+stderr_logfile = /var/log/supervisor/mysite_worker_err.log
+stopsignal=INT

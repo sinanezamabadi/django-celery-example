@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  django-celery:
+    container_name: Django-Celery
+    image: 172.16.0.183:8085/django-celery:$COMMIT_SHA
+    volumes:
+      - static:/static
+    restart: always
+    ports:
+      - "8000:8000"
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static:/static
+    ports:
+      - "80:80"
+    restart: always
+
+volumes:
+  static:

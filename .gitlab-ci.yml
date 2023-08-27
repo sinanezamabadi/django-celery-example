@@ -1,0 +1,46 @@
+stages:
+  - Build
+  - Deploy
+  - Cleanup
+
+variables:
+  DNS_SERVER: "149.56.3.49"
+  PROJECT_HOME: $PROJECT_HOME
+  PROJECT_NAME: $CI_PROJECT_NAME
+  PROJECT_PATH: $PROJECT_PATH
+  NEXUS_URL: $NEXUS_URL
+  NEXUS_USER: $NEXUS_USER
+  NEXUS_PASSWORD: $NEXUS_PASSWORD
+  COMMIT_SHA: $CI_COMMIT_SHORT_SHA
+  APP_IMAGE: $PROJECT_NAME:$COMMIT_SHA
+
+Build:
+  stage: Build
+  before_script:
+    - echo "$NEXUS_PASSWORD" | docker login "$NEXUS_URL" -u "$NEXUS_USER" --password-stdin;
+  script:
+    - docker pull $NEXUS_URL/repository/docker/python:3.6
+    - docker build -t "$NEXUS_URL/$APP_IMAGE" .
+    - docker push $NEXUS_URL/$APP_IMAGE
+  tags:
+    - "local-runner"
+
+Deploy:
+  stage: Deploy
+  before_script:
+    - echo "$NEXUS_PASSWORD" | docker login "$NEXUS_URL" -u "$NEXUS_USER" --password-stdin;
+    - docker pull $NEXUS_URL/$APP_IMAGE
+  script:
+    - docker-compose -p $PROJECT_NAME up -d
+  tags:
+    - "deploy-runner"
+
+Cleanup:
+  stage: Cleanup
+  script:
+    - chmod +x cleanup_script.sh  # Make the script executable
+    - ./cleanup_script.sh  # Run the cleanup script
+  when: always  # Run this job regardless of previous job results
+  tags:
+    - "deploy-runner" # Or use appropriate tags 
+
