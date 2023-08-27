@@ -35,3 +35,7 @@ rabbitmq-server
 ```
 
 For more info see the Blog post.
+
+after add dockerized and cicd
+just project run on 8000 port
+and need to more work for connect to supervisor
